@@ -1,0 +1,70 @@
+# Template file for 'mozjs91'
+pkgname=mozjs91
+version=91.7.1
+revision=1
+wrksrc="firefox-${version}"
+build_wrksrc=js/src
+build_style=gnu-configure
+build_helper=rust
+configure_args="--disable-jemalloc --disable-strip --disable-tests \
+ --disable-optimize --disable-debug --enable-ctypes --enable-readline \
+ --enable-shared-js --enable-system-ffi --with-intl-api --with-system-icu \
+ --with-system-nspr --with-system-zlib --enable-hardening --enable-release"
+hostmakedepends="make pkg-config python3 python3-setuptools python3-six perl m4
+ awk rust cargo llvm12 clang"
+makedepends="icu-devel libffi-devel nspr-devel python3-devel readline-devel
+ zlib-devel rust-std linux-headers"
+checkdepends=python3
+short_desc="Mozilla JavaScript interpreter and library (91.x)"
+maintainer="q66 <q66@chimera-linux.org>"
+license="MPL-2.0"
+homepage="https://www.mozilla.org/firefox"
+distfiles="${MOZILLA_SITE}/firefox/releases/${version}esr/source/firefox-${version}esr.source.tar.xz"
+checksum=57494a445e72f7eacb0bb870a3a79cde3c2143e234873c0c3e269df1d4742c92
+# can't include ppc jit yet, interactive interpreter segfaults
+# (i guess because of lack of ion?)
+
+LDFLAGS="-Wl,-z,stack-size=1048576"
+
+if [ "$XBPS_TARGET_NO_ATOMIC8" ]; then
+	makedepends+=" libatomic-devel"
+	LDFLAGS+=" -latomic"
+fi
+
+pre_configure() {
+	if [ "$CROSS_BUILD" ]; then
+		configure_args+=" --host=${XBPS_TRIPLET} --target=${XBPS_CROSS_TRIPLET} --enable-linker=bfd"
+	fi
+	export M4=m4
+	export AWK=awk
+	export AC_MACRODIR=../../build/autoconf
+	chmod 0755 ../../build/autoconf/autoconf.sh
+	sh ../../build/autoconf/autoconf.sh configure.in > configure
+	chmod 0755 configure
+}
+
+post_install() {
+	# Remove unneeded static library
+	rm -f "${DESTDIR}"/usr/lib/*.ajs
+
+	# it has correct soname but not the right file name
+	mv "${DESTDIR}"/usr/lib/libmozjs-91.so \
+	   "${DESTDIR}"/usr/lib/libmozjs-91.so.0
+	ln -rs "${DESTDIR}"/usr/lib/libmozjs-91.so.0 \
+	       "${DESTDIR}"/usr/lib/libmozjs-91.so
+}
+
+do_check() {
+	python jit-test/jit_test.py -s -t 2400 --no-progress ../../js/src/dist/bin/js basic
+}
+
+mozjs91-devel_package() {
+	depends="nspr-devel ${sourcepkg}>=${version}_${revision}"
+	short_desc+=" - development files"
+	pkg_install() {
+		vmove usr/bin/js91-config
+		vmove usr/include
+		vmove "usr/lib/*.so"
+		vmove usr/lib/pkgconfig
+	}
+}
