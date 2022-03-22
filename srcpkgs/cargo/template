@@ -1,6 +1,6 @@
 # Template file for 'cargo'
 pkgname=cargo
-version=0.58.0
+version=0.60.0
 revision=1
 wrksrc="cargo-${version}"
 build_helper=rust
@@ -12,9 +12,9 @@ maintainer="Enno Boland <gottox@voidlinux.org>"
 license="MIT, Apache-2.0"
 homepage="https://crates.io/"
 distfiles="https://github.com/rust-lang/cargo/archive/${version}.tar.gz
- https://github.com/crossbeam-rs/crossbeam/archive/refs/tags/crossbeam-utils-0.8.5.tar.gz"
-checksum="e1d6f55414a29906d24b13c687996b5220e08ccce9c682e4c02851138fc7093f
- 57db07eb38b0aaf7951c79b4639819cb84bc4269507091afea7267e10a54e079"
+ https://github.com/crossbeam-rs/crossbeam/archive/refs/tags/crossbeam-utils-0.8.7.tar.gz"
+checksum="96dfa69407e9c5493c0858aab1d89e8f8bad992ab9ee1f83f2c55f6c7fc3686a
+ 560fa9a67019d3b3db7c4b887cbc35cc8e87a436b04d5943d5cdf844b4275229"
 replaces="cargo-tree>=0"
 
 build_options="static bindist"
