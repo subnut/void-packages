@@ -1,0 +1,34 @@
+# Template file for 'spotify-adblock'
+pkgname=spotify-adblock
+version=1.0.1
+revision=1
+build_style=gnu-makefile
+build_helper=rust
+conf_files="/etc/spotify-adblock/config.toml"
+hostmakedepends="make cargo"
+makedepends="rust-std"
+short_desc="Adblocker for Spotify"
+maintainer="Subhaditya Nath <sn03.general@gmail.com>"
+license="GPL-3.0-or-later"
+homepage="https://github.com/abba23/spotify-adblock"
+distfiles="${homepage}/archive/v${version}.tar.gz"
+checksum=01edec4cc87fd0bbf77508fe6bcfdfba244771a992eca9d834df0f9399f1c360
+
+if [ "$CROSS_BUILD" ]; then
+	_releasedir="target/${RUST_TARGET}/release"
+else
+	_releasedir="target/release"
+fi
+
+do_install() {
+	vmkdir etc/spotify-adblock
+	vcopy config.toml etc/spotify-adblock
+	vinstall "${FILESDIR}/spotify-adblock.desktop" 644 usr/share/applications
+	vinstall "${_releasedir}/libspotifyadblock.so" 644 usr/lib spotify-adblock.so
+}
+
+spotify-adblock-linux_package() {
+	build_style=meta
+	short_desc+=" (transitional dummy package)"
+	depends="spotify-adblock>=${version}_${revision}"
+}
