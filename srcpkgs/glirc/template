@@ -1,0 +1,41 @@
+# Template file for 'glirc'
+pkgname=glirc
+version=2.38
+revision=1
+wrksrc="irc-core-${version}"
+hostmakedepends="cabal-install"
+makedepends="ncurses-devel openssl-devel"
+short_desc="Console IRC client written in Haskell"
+maintainer="Subhaditya Nath <sn03.general@gmail.com>"
+license="ISC"
+homepage="https://github.com/glguy/irc-core"
+distfiles="${homepage}/archive/v${version}.tar.gz"
+checksum=abb51831a3748c22eb5f8fbeee1fa71d2a99a6f92331976eef980f8f7d0c9680
+nocross="cabal does not support cross compilation"
+nopie=yes	# ghc is currently built without PIE support
+
+_cabal_opts="-g"
+
+if [ "$XBPS_TARGET_NO_ATOMIC8" ]; then
+	makedepends+=" libatomic-devel"
+	_cabal_opts+=" --ghc-option -latomic"
+fi
+
+if [ "$XBPS_MAKEJOBS" ]; then
+	_cabal_opts+=" --jobs=$XBPS_MAKEJOBS"
+fi
+
+_ghcver="$(xbps-query -S ghc --prop pkgver)"
+_ghcver="${_ghcver%_*}"
+
+do_build() {
+	cabal update $_cabal_opts
+	cabal build  $_cabal_opts
+	mv dist-newstyle/build/*/${_ghcver}/glirc-${version}/build/glirc/glirc glirc
+}
+
+do_install() {
+	vbin glirc
+	vman glirc.1
+	vlicense LICENSE
+}
