@@ -1,0 +1,14 @@
+# Template file for 'rust-test'
+pkgname=rust-test
+version=1
+revision=1
+archs=i686
+build_style=meta
+checkdepends=rust
+short_desc=test
+maintainer="Orphaned <orphan@voidlinux.com>"
+license=WTFPL
+homepage=test
+do_check() {
+	rustc --version --verbose
+}
