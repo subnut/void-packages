@@ -1,10 +1,15 @@
 --- a/Makefile
 +++ b/Makefile
-@@ -5,5 +5,5 @@ SRCS = mongoose.c test/unit_test.c test/packed_fs.c
+@@ -1,9 +1,9 @@
+-SRCS = mongoose.c test/unit_test.c test/packed_fs.c
++SRCS = mongoose.c test/unit_test.c
+ HDRS = $(wildcard src/*.h)
+ DEFS ?= -DMG_MAX_HTTP_HEADERS=7 -DMG_ENABLE_LINES -DMG_ENABLE_PACKED_FS=1
+ WARN ?= -W -Wall -Werror -Wshadow -Wdouble-promotion -fno-common -Wconversion -Wundef
  OPTS ?= -O3 -g3
  INCS ?= -Isrc -I.
 -CFLAGS ?= $(OPTS) $(WARN) $(INCS) $(DEFS) $(TFLAGS) $(EXTRA)
-+CFLAGS := $(OPTS) $(WARN) $(INCS) $(DEFS) $(TFLAGS) $(CFLAGS)
++CFLAGS := $(OPTS) $(WARN) $(INCS) $(CFLAGS)
  SSL ?= MBEDTLS
  CWD ?= $(realpath $(CURDIR))
 @@ -10,6 +10,9 @@ CWD ?= $(realpath $(CURDIR))
