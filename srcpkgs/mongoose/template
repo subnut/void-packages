@@ -1,7 +1,7 @@
 # Template file for 'mongoose'
 pkgname=mongoose
 version=7.6
-revision=1
+revision=2
 build_style=gnu-makefile
 make_use_env=yes
 make_check_target=test
@@ -14,12 +14,16 @@ license="GPL-2.0-only"
 homepage="https://mongoose.ws/"
 distfiles="https://github.com/cesanta/mongoose/archive/${version}.tar.gz"
 checksum=1ef09d971b6de1a6317c109980d6fb5a9c19b39efef2506d6b76869644b3dafa
+build_options="packedfs"
+desc_option_packedfs="Enable embedded (packed) FS support"
+build_options_default="~packedfs"
+
+export SSL=OPENSSL
+export DEFS="-DMG_ENABLE_LINES=1 -DMG_ENABLE_PACKED_FS=$(vopt_if packedfs 1 0)"
 
 # -Wno-error=unused-function: patched tests leave some functions unused
 # -Wno-error=sign-conversion: GCC falsely flags musl FD_{SET,ISSET,CLR}
 CFLAGS="-fPIC -Wno-error=sign-conversion -Wno-error=unused-function"
-
-export SSL=OPENSSL
 
 # libsanitizer-devel is currenly not available on musl
 if [ "$XBPS_TARGET_LIBC" = musl ]; then
@@ -33,6 +37,20 @@ if [ "$XBPS_BUILD_ENVIRONMENT" = "void-packages-ci" ]; then
 	make_check_args+=" IPV6=0"
 fi
 
+post_build() {
+	if [ "$build_option_packedfs" ]; then
+		cd test
+		make pack
+		mv pack mongoose-pack	# /bin/pack is taken by allegro4
+	fi
+}
+
+pre_install() {
+	if [ "$build_option_packedfs" ]; then
+		vbin test/mongoose-pack
+	fi
+}
+
 mongoose-devel_package() {
 	depends="${sourcepkg}>=${version}_${revision}"
 	short_desc+=" - development files"
@@ -40,6 +58,9 @@ mongoose-devel_package() {
 		vmove usr/include
 		vmove "usr/lib/*.a"
 		vmove "usr/lib/*.so"
+		if [ "$build_option_packedfs" ]; then
+			vmove usr/bin/mongoose-pack
+		fi
 	}
 }
 

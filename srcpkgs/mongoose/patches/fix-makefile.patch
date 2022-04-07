@@ -1,23 +1,32 @@
+diff --git a/Makefile b/Makefile
+index 33c00f75..2d49281a 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -5,5 +5,5 @@ SRCS = mongoose.c test/unit_test.c test/packed_fs.c
+@@ -1,15 +1,21 @@
+-SRCS = mongoose.c test/unit_test.c test/packed_fs.c
++SRCS = mongoose.c test/unit_test.c
+ HDRS = $(wildcard src/*.h)
+ DEFS ?= -DMG_MAX_HTTP_HEADERS=7 -DMG_ENABLE_LINES -DMG_ENABLE_PACKED_FS=1
+ WARN ?= -W -Wall -Werror -Wshadow -Wdouble-promotion -fno-common -Wconversion -Wundef
  OPTS ?= -O3 -g3
  INCS ?= -Isrc -I.
 -CFLAGS ?= $(OPTS) $(WARN) $(INCS) $(DEFS) $(TFLAGS) $(EXTRA)
 +CFLAGS := $(OPTS) $(WARN) $(INCS) $(DEFS) $(TFLAGS) $(CFLAGS)
  SSL ?= MBEDTLS
  CWD ?= $(realpath $(CURDIR))
-@@ -10,6 +10,9 @@ CWD ?= $(realpath $(CURDIR))
  DOCKER ?= docker run --rm -e Tmp=. -e WINEDEBUG=-all -v $(CWD):$(CWD) -w $(CWD)
  VCFLAGS = /nologo /W3 /O2 /I. $(DEFS) $(TFLAGS)
  IPV6 ?= 1
-+ifneq "$(NO_SANITIZE)" "1"
++ifneq (1,$(NO_SANITIZE))
 +SANITIZE = -fsanitize=address,undefined
++endif
++ifneq (,$(findstring MG_ENABLE_PACKED_FS=1,$(CFLAGS)))
++SRCS += test/packed_fs.c
 +endif
  ASAN_OPTIONS ?=
  EXAMPLES := $(wildcard examples/*)
  PREFIX ?= /usr/local
-@@ -19,12 +22,12 @@ VERSION ?= $(shell cut -d'"' -f2 src/version.h)
+@@ -19,12 +25,12 @@ VERSION ?= $(shell cut -d'"' -f2 src/version.h)
  ifeq "$(SSL)" "MBEDTLS"
  MBEDTLS ?= /usr
  CFLAGS  += -DMG_ENABLE_MBEDTLS=1 -I$(MBEDTLS)/include -I/usr/include
@@ -32,7 +41,7 @@
  endif
  
  all: mg_prefix unamalgamated unpacked test test++ arm examples vc98 vc2017 mingw mingw++ linux linux++ fuzz
-@@ -59,7 +62,7 @@ fuzz: fuzzer
+@@ -59,7 +65,7 @@ fuzz: fuzzer
  	$(RUN) ./fuzzer
  
  # make CC=/usr/local/opt/llvm\@8/bin/clang ASAN_OPTIONS=detect_leaks=1
@@ -41,7 +50,7 @@
  test: mongoose.h  Makefile $(SRCS)
  	$(CC) $(SRCS) $(CFLAGS) -coverage $(LDFLAGS) -g -o unit_test
  	ASAN_OPTIONS=$(ASAN_OPTIONS) $(RUN) ./unit_test
-@@ -108,10 +111,12 @@ linux++: CC = g++
+@@ -108,10 +114,12 @@ linux++: CC = g++
  linux++: WARN += -Wno-missing-field-initializers
  linux++: linux
  
