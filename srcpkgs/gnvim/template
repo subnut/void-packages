@@ -1,0 +1,30 @@
+# Template file for 'gnvim'
+pkgname=gnvim
+version=0.1.6
+revision=1
+_nvim_rs_version=0.4.0
+build_style=gnu-makefile
+build_helper=rust
+hostmakedepends="cargo pkg-config"
+makedepends="gtk+3-devel"
+short_desc="GTK UI for neovim"
+maintainer="Subhaditya Nath <sn03.general@gmail.com>"
+license="MIT"
+homepage="https://github.com/vhakulinen/gnvim"
+distfiles="https://github.com/vhakulinen/gnvim/archive/v${version}.tar.gz"
+checksum=5cda3422b99114710cee6818cf3616ed0e7f810d38e51dd1861c9c269b9e28d0
+# FIXME: submodules exist. fetch them using $distfiles, and
+# put them in correct directories using post_extract()
+
+# makedepends that are needed for building dependency crates
+makedepends+=" libsoup-devel"   	# for soup-sys
+makedepends+=" webkit2gtk-devel"	# for webkit2gtk-sys
+
+post_patch() {
+	vsed -i build.rs -e "/let version_str/s/@@VERSION@@/${version}/"
+	vsed -i Cargo.toml -e "/^git.*nvim-rs/s/.*/version = \"${_nvim_rs_version}\"/"
+}
+
+post_install() {
+	vlicense LICENSE
+}
