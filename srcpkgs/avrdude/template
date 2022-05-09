@@ -2,12 +2,15 @@
 pkgname=avrdude
 version=7.0
 revision=1
-build_style=gnu-configure
+build_style=cmake
 configure_args="
- $(vopt_enable spi linuxspi)
- $(vopt_enable gpio linuxgpio)
- $(vopt_enable parport parport)
-"
+ -D BUILD_SHARED_LIBS=true
+ -D CMAKE_INSTALL_SYSCONFDIR=/etc
+ -D FETCHCONTENT_FULLY_DISCONNECTED=true
+ $(vopt_bool spi HAVE_LINUXSPI)
+ $(vopt_bool gpio HAVE_LINUXGPIO)
+ $(vopt_bool parport HAVE_PARPORT)
+ "
 hostmakedepends="flex"
 makedepends="elfutils-devel libusb-devel libusb-compat-devel libftdi1-devel
  hidapi-devel"
@@ -17,11 +20,12 @@ maintainer="Subhaditya Nath <sn03.general@gmail.com>"
 license="GPL-2.0-only"
 homepage="http://www.nongnu.org/avrdude/"
 changelog="https://raw.githubusercontent.com/avrdudes/avrdude/v${version}/NEWS"
-distfiles="$NONGNU_SITE/$pkgname/${pkgname}-$version.tar.gz"
-checksum=c0ef65d98d6040ca0b4f2b700d51463c2a1f94665441f39d15d97442dbb79b54
+distfiles="https://github.com/avrdudes/avrdude/archive/refs/tags/v${version}.tar.gz"
+checksum=5de0f7f51c3ebffcd2bfecd6a0544bd468c55400e09f7d7533a1cd67ddc63a95
 conf_files="/etc/avrdude.conf"
 build_options="gpio spi parport"
+build_options_default="${build_options}"
 desc_option_spi="Enable Linux SPI support"
 desc_option_gpio="Enable Linux sysfs GPIO support"
 desc_option_parport="Enable parallel port support"
-build_options_default="${build_options}"
+# Above descriptions were obtained from `cmake -LH | grep -F BOOL -B1`
