@@ -4,7 +4,7 @@ version=1.2.5
 revision=1
 build_style=gnu-makefile
 make_use_env=yes
-make_build_args="VERBOSE=0"
+make_build_args="VERBOSE=1"
 hostmakedepends="pkg-config php lv2"
 makedepends="lv2 libglvnd-devel jack-devel libsndfile-devel
  libXrandr-devel cairo-devel freetype-devel"
@@ -15,10 +15,23 @@ homepage="https://lsp-plug.in/"
 changelog="https://raw.githubusercontent.com/sadko4u/lsp-plugins/master/CHANGELOG"
 distfiles="https://github.com/sadko4u/lsp-plugins/releases/download/$version/lsp-plugins-src-$version.tar.gz"
 checksum=618aedf856e963b884ba2d1ac3809ef78056d521c3934387f20152ce45b67e4c
-nocross="Build system doesn't support cross-compilation properly"
 
 do_configure() {
-	make LD="$CXX" PREFIX=/usr config
+	make config \
+		PREFIX=/usr \
+		SO_FLAGS_EXT= \
+		EXE_FLAGS_EXT= \
+		HOST_AS="$AS_host" \
+		HOST_AR="$AR_host" \
+		HOST_CC="$CC_FOR_BUILD" \
+		HOST_LD="$LD_FOR_BUILD" \
+		HOST_CXX="$CXX_FOR_BUILD" \
+		HOST_CFLAGS="$CFLAGS_FOR_BUILD" \
+		HOST_CXXFLAGS="$CXXFLAGS_FOR_BUILD" \
+		HOST_PKG_CONFIG="$PKG_CONFIG_FOR_BUILD" \
+		ARCHITECTURE="$XBPS_TARGET_MACHINE"
+		# HOST_LDFLAGS="$LDFLAGS_FOR_BUILD" \
+
 }
 
 lsp-plugins-doc_package() {
